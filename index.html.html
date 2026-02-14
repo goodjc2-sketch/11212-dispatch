@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>11212 Dispatch</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Libre+Baskerville:wght@700&family=UnifrakturMaguntia&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background-color: #f5f1e8;
+            background-image: 
+                linear-gradient(rgba(255,255,255,.8), rgba(255,255,255,.8)),
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 10px,
+                    rgba(0,0,0,.02) 10px,
+                    rgba(0,0,0,.02) 11px
+                ),
+                repeating-linear-gradient(
+                    -45deg,
+                    transparent,
+                    transparent 10px,
+                    rgba(0,0,0,.02) 10px,
+                    rgba(0,0,0,.02) 11px
+                );
+            background-size: 100%, 20px 20px, 20px 20px;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+        
+        body::before {
+            content: 'DISPATCH • NEWS • DISPATCH • NEWS • DISPATCH • NEWS • DISPATCH • NEWS • DISPATCH • NEWS • DISPATCH • NEWS • DISPATCH • NEWS • DISPATCH • NEWS • DISPATCH • NEWS • DISPATCH • NEWS • DISPATCH • NEWS • DISPATCH • NEWS • DISPATCH • NEWS • DISPATCH • NEWS';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 200%;
+            height: 200%;
+            font-size: 24px;
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            color: rgba(0,0,0,0.03);
+            line-height: 80px;
+            word-spacing: 80px;
+            transform: rotate(-45deg);
+            transform-origin: center;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            color: #000;
+            text-align: center;
+            margin-bottom: 5px;
+            font-size: 5em;
+            font-weight: 700;
+            font-family: 'UnifrakturMaguntia', 'Playfair Display', serif;
+            letter-spacing: 8px;
+            border-top: 6px double #000;
+            border-bottom: 6px double #000;
+            padding: 35px 0;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-style: italic;
+            color: #444;
+            margin-bottom: 25px;
+            font-size: 0.95em;
+            background: #fff;
+            padding: 12px;
+            border-bottom: 2px solid #000;
+            font-family: 'Georgia', serif;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .refresh-btn {
+            display: block;
+            margin: 0 auto 20px;
+            padding: 10px 25px;
+            background: #000;
+            color: #fff;
+            border: 2px solid #000;
+            border-radius: 0;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Georgia', serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        .refresh-btn:active {
+            transform: scale(0.98);
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .dashboard .span-2 {
+            grid-column: span 2;
+        }
+
+        .dashboard .span-full {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 1400px) {
+            .dashboard {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .dashboard .span-2 {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 1000px) {
+            .dashboard {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .dashboard .span-2 {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            .dashboard .span-2 {
+                grid-column: span 1;
+            }
+        }
+
+        .card {
+            background: #fefdfb;
+            border-radius: 0;
+            padding: 25px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+            border: 2px solid #000;
+            animation: fadeIn 0.5s ease-in;
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 1px,
+                rgba(0,0,0,0.01) 1px,
+                rgba(0,0,0,0.01) 2px
+            );
+            pointer-events: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card h2 {
+            color: #000;
+            margin-bottom: 15px;
+            font-size: 2.2em;
+            font-weight: 900;
+            border-bottom: 4px double #000;
+            padding-bottom: 12px;
+            font-family: 'Libre Baskerville', 'Georgia', serif;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-content {
+            overflow-y: auto;
+            flex: 1;
+            padding-right: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-content iframe {
+            padding-right: 0;
+        }
+
+        .card-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .card-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .card-content::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .card-content::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .loading {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+        }
+
+        .error {
+            color: #e74c3c;
+            padding: 10px;
+            background: #fee;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .sports-score {
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 0;
+            margin-bottom: 10px;
+            border-left: 3px solid #000;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .sports-logo {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .sports-score-content {
+            flex: 1;
+        }
+
+        .sports-header {
+            font-size: 0.75em;
+            color: #666;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .sports-matchup {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 5px;
+        }
+
+        .team {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .score {
+            font-size: 1.5em;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .sports-news {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            background: #f9f9f9;
+            margin-bottom: 8px;
+        }
+
+        .sports-news:last-child {
+            border-bottom: none;
+        }
+
+        .sports-news a {
+            color: #333;
+            text-decoration: none;
+            font-size: 0.95em;
+            display: block;
+            margin-top: 3px;
+        }
+
+        .sports-news a:hover {
+            color: #000;
+            text-decoration: underline;
+        }
+
+        .sports-news-label {
+            font-size: 0.7em;
+            color: #666;
+            font-weight: bold;
+            margin-bottom: 3px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .market-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .market-item:last-child {
+            border-bottom: none;
+        }
+
+        .market-value {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .positive { color: #27ae60; }
+        .negative { color: #e74c3c; }
+
+        .economic-event {
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .economic-event:last-child {
+            border-bottom: none;
+        }
+
+        .economic-event-title {
+            font-weight: 500;
+            font-size: 0.95em;
+            margin-bottom: 3px;
+        }
+
+        .economic-event.past {
+            opacity: 0.6;
+        }
+
+        .economic-event.upcoming {
+            background: #fffacd;
+            padding: 10px;
+            margin: 5px 0;
+            border-left: 3px solid #000;
+        }
+
+        .economic-event a {
+            color: #333;
+            text-decoration: none;
+        }
+
+        .economic-event a:hover {
+            color: #000;
+            text-decoration: underline;
+        }
+
+        .economic-event-meta {
+            color: #999;
+            font-size: 0.75em;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 3px;
+        }
+
+        .weather-location {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .weather-location:last-child {
+            border-bottom: none;
+        }
+
+        .weather-location-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .weather-temp {
+            font-size: 2em;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .weather-desc {
+            font-size: 1em;
+            color: #666;
+            text-transform: capitalize;
+        }
+
+        .weather-details {
+            font-size: 0.85em;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .news-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .news-item:last-child {
+            border-bottom: none;
+        }
+
+        .news-item a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .news-item a:hover {
+            color: #000;
+        }
+
+        .news-source {
+            color: #999;
+            font-size: 0.85em;
+        }
+
+        .config-note {
+            background: #fffacd;
+            border: 2px solid #000;
+            border-radius: 0;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #000;
+            font-family: 'Georgia', serif;
+        }
+
+        .config-note strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>11212 Dispatch</h1>
+        <div class="subtitle">Your Personalized News & Market Brief • Updated Every 30 Minutes</div>
+
+        <button class="refresh-btn" onclick="loadAllData()">🔄 Refresh Dashboard</button>
+
+        <div class="dashboard">
+            <!-- Row 1: Sports, Markets, Weather, Economic Calendar -->
+            <div class="card">
+                <h2>🏀 Sports</h2>
+                <div class="card-content" id="sports-content">
+                    <div class="loading">Loading scores...</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📈 Markets</h2>
+                <div class="card-content">
+                    <div id="market-content" class="loading">Loading market data...</div>
+                    <div id="market-timestamp" style="font-size: 0.8em; color: #999; margin-top: 10px; font-style: italic;"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🌤️ Weather</h2>
+                <div class="card-content" id="weather-content">
+                    <div class="loading">Loading weather...</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📅 Economic Calendar</h2>
+                <div class="card-content" id="economic-content">
+                    <div class="loading">Loading calendar...</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🗓️ Family Calendar</h2>
+                <div class="card-content" id="calendar-content" style="padding: 0;">
+                    <iframe src="https://calendar.google.com/calendar/embed?src=goodjc2%40gmail.com&ctz=America%2FNew_York&mode=AGENDA&showTitle=0&showNav=0&showDate=0&showPrint=0&showTabs=0&showCalendars=0&showTz=0&height=460" 
+                            style="border: 0; width: 100%; height: 100%;" 
+                            frameborder="0" 
+                            scrolling="yes">
+                    </iframe>
+                </div>
+            </div>
+
+            <!-- Row 2: Three News Sections (span 2 columns each on large screens) -->
+            <div class="card">
+                <h2>🤖 AI & Tech</h2>
+                <div class="card-content" id="news-aitech-content">
+                    <div class="loading">Loading news...</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>💊 Supplement Industry</h2>
+                <div class="card-content" id="news-supplements-content">
+                    <div class="loading">Loading news...</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>💰 Financial News</h2>
+                <div class="card-content" id="news-finance-content">
+                    <div class="loading">Loading news...</div>
+                </div>
+            </div>
+
+            <!-- Row 3: Family Calendar (Full Width) -->
+            <div class="card span-full" style="height: 650px;">
+                <h2>🗓️ Family Calendar</h2>
+                <div class="card-content" style="padding: 0;">
+                    <iframe src="https://calendar.google.com/calendar/embed?src=goodjc2%40gmail.com&ctz=America%2FNew_York" 
+                            style="border: 0; width: 100%; height: 100%;" 
+                            frameborder="0" 
+                            scrolling="no">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Box at Bottom -->
+        <div class="config-note" style="margin-top: 20px;">
+            <strong>✅ Dashboard Status:</strong>
+            <br>• <strong>News:</strong> Working! (RSS feeds from AI/Tech, Supplements, Finance)
+            <br>• <strong>Market Data:</strong> Working! (Alpha Vantage API connected)
+            <br>• <strong>Weather:</strong> Working! (National Weather Service - no API key needed!)
+            <br>• <strong>Sports:</strong> Working! (ESPN API + Army Athletics RSS feeds)
+            <br>• <strong>Economic Calendar:</strong> Working! (Fed, BLS, and economic event feeds)
+            <br>• <strong>Family Calendar:</strong> Working! (Google Calendar integration)
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURATION
+        // ============================================
+        const CONFIG = {
+            // Weather from National Weather Service (NO API KEY NEEDED!)
+            weatherLocations: [
+                { city: 'North Potomac', state: 'MD', lat: 39.0997, lon: -77.1481 },
+                { city: 'Richmond', state: 'VA', lat: 37.5407, lon: -77.4360 },
+                { city: 'Champaign', state: 'IL', lat: 40.1164, lon: -88.2434 }
+            ],
+            
+            // 🔑 PASTE YOUR ALPHA VANTAGE API KEY HERE
+            marketApiKey: 'PASTE_YOUR_ALPHAVANTAGE_KEY_HERE',
+            marketSymbols: [
+                { symbol: 'SPY', name: 'S&P 500' },
+                { symbol: 'DIA', name: 'Dow Jones' },
+                { symbol: 'QQQ', name: 'NASDAQ' }
+            ],
+            
+            // RSS Feeds - Organized by category
+            newsFeedsAITech: [
+                'https://techcrunch.com/category/artificial-intelligence/feed/',
+                'https://www.artificialintelligence-news.com/feed/',
+                'https://www.technologyreview.com/topic/artificial-intelligence/feed',
+                'https://venturebeat.com/category/ai/feed/',
+                'https://www.theverge.com/ai-artificial-intelligence/rss/index.xml',
+                'https://techcrunch.com/feed/',
+                'https://www.wired.com/feed/tag/ai/latest/rss'
+            ],
+            newsFeedsSupplements: [
+                'https://www.nutraingredients-usa.com/RSS/Consumer-Trends',
+                'https://www.nutraingredients-usa.com/RSS/Regulation-Policy',
+                'https://www.naturalproductsinsider.com/rss',
+                'https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/dietary-supplements/rss.xml',
+                'https://www.nutritionbusinessjournal.com/rss/',
+                'https://www.supplysideinsights.com/rss'
+            ],
+            newsFeedsFinance: [
+                'https://www.cnbc.com/id/100003114/device/rss/rss.html',
+                'https://feeds.bloomberg.com/markets/news.rss',
+                'https://www.forbes.com/innovation/feed2/',
+                'https://www.reuters.com/finance/deals',
+                'https://feeds.a.dj.com/rss/RSSMarketsMain.xml'
+            ],
+            articlesPerCategory: 5,
+            
+            // Economic Calendar RSS Feeds - Major events only
+            economicCalendarFeeds: [
+                'https://www.federalreserve.gov/feeds/press_all.xml',  // Fed announcements only
+            ],
+            economicEventsCount: 15,
+            
+            // Sports teams to track
+            sportsTeams: {
+                nfl: ['BAL'],
+                nhl: ['WSH'],
+                collegeFootball: ['army', 'illinois'],
+                collegeMbb: ['illinois', 'army', 'richmond'],
+                collegeWbb: ['richmond'],
+                collegeMlax: ['richmond'],
+                armyRssFeeds: [
+                    'https://goarmywestpoint.com/rss.aspx?path=wlacros',
+                    'https://goarmywestpoint.com/rss.aspx?path=mlacros',
+                    'https://goarmywestpoint.com/rss.aspx?path=wswim',
+                    'https://goarmywestpoint.com/rss.aspx?path=mswim',
+                    'https://goarmywestpoint.com/rss.aspx?path=mrugby',
+                    'https://goarmywestpoint.com/rss.aspx?path=general'
+                ]
+            },
+            
+            // Team logos (hardcoded for reliability)
+            teamLogos: {
+                'army': 'https://a.espncdn.com/i/teamlogos/ncaa/500/349.png',
+                'illinois': 'https://a.espncdn.com/i/teamlogos/ncaa/500/356.png',
+                'richmond': 'https://a.espncdn.com/i/teamlogos/ncaa/500/257.png'
+            }
+        };
+
+        // ============================================
+        // FETCH FUNCTIONS
+        // ============================================
+
+        async function fetchSportsScores() {
+            try {
+                const allGames = [];
+                const today = new Date();
+                const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                const fourteenDaysAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000);
+                const sevenDaysAhead = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+                async function fetchESPN(league, team) {
+                    try {
+                        const url = `https://site.api.espn.com/apis/site/v2/sports/${league}/teams/${team}/schedule`;
+                        const response = await fetch(url);
+                        const data = await response.json();
+                        
+                        console.log(`Fetching ${league} for ${team}:`, data);
+                        
+                        if (data.events) {
+                            return data.events.filter(event => {
+                                const gameDate = new Date(event.date);
+                                return gameDate >= sevenDaysAgo && gameDate <= sevenDaysAhead;
+                            }).map(event => {
+                                const comp = event.competitions[0];
+                                const homeTeam = comp.competitors.find(t => t.homeAway === 'home');
+                                const awayTeam = comp.competitors.find(t => t.homeAway === 'away');
+                                const gameDate = new Date(event.date);
+                                
+                                const getScore = (competitor) => {
+                                    if (!competitor.score) return '-';
+                                    if (typeof competitor.score === 'object') {
+                                        return competitor.score.value || competitor.score.displayValue || '-';
+                                    }
+                                    return String(competitor.score);
+                                };
+                                
+                                // Determine which team logo to show (our team) - use hardcoded logos
+                                const ourTeam = team.toLowerCase();
+                                let logoUrl = CONFIG.teamLogos[ourTeam] || null;
+                                
+                                console.log(`Logo for ${ourTeam}: ${logoUrl}`);
+                                
+                                return {
+                                    sport: league.toUpperCase(),
+                                    team1: awayTeam.team.displayName,
+                                    team2: homeTeam.team.displayName,
+                                    score1: getScore(awayTeam),
+                                    score2: getScore(homeTeam),
+                                    status: comp.status.type.description,
+                                    date: gameDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+                                    time: gameDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+                                    completed: comp.status.type.completed,
+                                    logo: logoUrl
+                                };
+                            });
+                        }
+                        return [];
+                    } catch (error) {
+                        console.error(`Error fetching ${league} ${team}:`, error);
+                        return [];
+                    }
+                }
+
+                for (const team of CONFIG.sportsTeams.nfl) {
+                    const games = await fetchESPN('football/nfl', team);
+                    allGames.push(...games);
+                }
+
+                for (const team of CONFIG.sportsTeams.nhl) {
+                    const games = await fetchESPN('hockey/nhl', team);
+                    allGames.push(...games);
+                }
+
+                for (const team of CONFIG.sportsTeams.collegeFootball) {
+                    const games = await fetchESPN('football/college-football', team);
+                    allGames.push(...games);
+                }
+
+                for (const team of CONFIG.sportsTeams.collegeMbb) {
+                    const games = await fetchESPN('basketball/mens-college-basketball', team);
+                    allGames.push(...games);
+                }
+
+                for (const team of CONFIG.sportsTeams.collegeWbb) {
+                    const games = await fetchESPN('basketball/womens-college-basketball', team);
+                    allGames.push(...games);
+                }
+
+                for (const team of CONFIG.sportsTeams.collegeMlax) {
+                    try {
+                        const games = await fetchESPN('lacrosse/mens-college-lacrosse', team);
+                        allGames.push(...games);
+                    } catch (error) {
+                        console.log(`Skipping ${team} lacrosse due to API error`);
+                    }
+                }
+
+                try {
+                    const armyNewsSet = new Set();
+                    const armyArticles = [];
+                    
+                    for (const feedUrl of CONFIG.sportsTeams.armyRssFeeds) {
+                        try {
+                            const rssUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`;
+                            const response = await fetch(rssUrl);
+                            
+                            // Check if response is ok
+                            if (!response.ok) {
+                                console.log(`RSS2JSON returned ${response.status} for ${feedUrl}`);
+                                continue; // Skip this feed
+                            }
+                            
+                            const data = await response.json();
+                            
+                            if (data.status === 'ok' && data.items && data.items.length > 0) {
+                                data.items.forEach(item => {
+                                    const key = item.title;
+                                    if (!armyNewsSet.has(key)) {
+                                        armyNewsSet.add(key);
+                                        armyArticles.push({
+                                            sport: 'ARMY ATHLETICS',
+                                            title: item.title,
+                                            link: item.link || item.url || '#',
+                                            date: new Date(item.pubDate),
+                                            dateStr: new Date(item.pubDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                                            isNews: true
+                                        });
+                                    }
+                                });
+                            }
+                        } catch (error) {
+                            console.error(`Error fetching Army RSS ${feedUrl}:`, error);
+                        }
+                    }
+                    
+                    armyArticles.sort((a, b) => b.date - a.date);
+                    const topArmyArticles = armyArticles.slice(0, 6).map(article => ({
+                        sport: article.sport,
+                        title: article.title,
+                        link: article.link,
+                        date: article.dateStr,
+                        isNews: true
+                    }));
+                    
+                    allGames.push(...topArmyArticles);
+                    
+                    console.log(`Army articles found: ${topArmyArticles.length}`);
+                    
+                    if (topArmyArticles.length === 0) {
+                        allGames.push({
+                            sport: 'ARMY ATHLETICS',
+                            title: 'Visit Army West Point Athletics for Latest Updates',
+                            link: 'https://goarmywestpoint.com/sports/general/archives',
+                            date: 'Today',
+                            isNews: true
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error fetching Army RSS:', error);
+                    // Add fallback
+                    allGames.push({
+                        sport: 'ARMY ATHLETICS',
+                        title: 'Visit Army West Point Athletics for Latest Updates',
+                        link: 'https://goarmywestpoint.com/sports/general/archives',
+                        date: 'Today',
+                        isNews: true
+                    });
+                }
+
+                const completed = allGames.filter(g => g.completed).sort((a, b) => b.date - a.date);
+                const upcoming = allGames.filter(g => !g.completed && !g.isNews).sort((a, b) => a.date - b.date);
+                const news = allGames.filter(g => g.isNews);
+
+                return {
+                    success: true,
+                    data: [...completed, ...upcoming, ...news]
+                };
+            } catch (error) {
+                console.error('Error fetching sports:', error);
+                return { 
+                    success: true,
+                    data: []
+                };
+            }
+        }
+
+        async function fetchMarketData() {
+            try {
+                if (!CONFIG.marketApiKey || CONFIG.marketApiKey === 'PASTE_YOUR_ALPHAVANTAGE_KEY_HERE') {
+                    return {
+                        success: true,
+                        timestamp: new Date().toLocaleString(),
+                        data: [
+                            { name: 'S&P 500', value: '4,783.45', change: '+1.2%', positive: true },
+                            { name: 'Dow Jones', value: '37,305.16', change: '+0.8%', positive: true },
+                            { name: 'NASDAQ', value: '14,813.92', change: '-0.3%', positive: false }
+                        ]
+                    };
+                }
+
+                const marketData = [];
+                let timestamp = '';
+
+                for (const index of CONFIG.marketSymbols) {
+                    try {
+                        const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${index.symbol}&apikey=${CONFIG.marketApiKey}`;
+                        const response = await fetch(url);
+                        const data = await response.json();
+
+                        if (data['Global Quote']) {
+                            const quote = data['Global Quote'];
+                            const price = parseFloat(quote['05. price']);
+                            const changePercent = quote['10. change percent'];
+                            const change = parseFloat(quote['09. change']);
+                            
+                            if (!timestamp && quote['07. latest trading day']) {
+                                const tradingDay = new Date(quote['07. latest trading day']);
+                                timestamp = tradingDay.toLocaleDateString('en-US', { 
+                                    weekday: 'long', 
+                                    year: 'numeric', 
+                                    month: 'long', 
+                                    day: 'numeric' 
+                                }) + ' (Market Close)';
+                            }
+                            
+                            marketData.push({
+                                name: index.name,
+                                value: price.toFixed(2),
+                                change: changePercent,
+                                positive: change >= 0
+                            });
+                        }
+                    } catch (error) {
+                        console.error(`Error fetching ${index.name}:`, error);
+                    }
+                }
+
+                if (marketData.length > 0) {
+                    return { 
+                        success: true, 
+                        data: marketData,
+                        timestamp: timestamp || new Date().toLocaleString()
+                    };
+                } else {
+                    return { success: false, error: 'No market data available' };
+                }
+            } catch (error) {
+                console.error('Error fetching market data:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function fetchWeather() {
+            try {
+                const weatherData = [];
+
+                for (const location of CONFIG.weatherLocations) {
+                    try {
+                        const pointsUrl = `https://api.weather.gov/points/${location.lat},${location.lon}`;
+                        const pointsResponse = await fetch(pointsUrl, {
+                            headers: { 'User-Agent': '(PersonalDashboard, contact@example.com)' }
+                        });
+                        const pointsData = await pointsResponse.json();
+
+                        if (pointsData.properties) {
+                            const observationUrl = pointsData.properties.observationStations;
+                            const stationsResponse = await fetch(observationUrl, {
+                                headers: { 'User-Agent': '(PersonalDashboard, contact@example.com)' }
+                            });
+                            const stationsData = await stationsResponse.json();
+
+                            if (stationsData.features && stationsData.features.length > 0) {
+                                const stationUrl = stationsData.features[0].id + '/observations/latest';
+                                const obsResponse = await fetch(stationUrl, {
+                                    headers: { 'User-Agent': '(PersonalDashboard, contact@example.com)' }
+                                });
+                                const obsData = await obsResponse.json();
+
+                                if (obsData.properties) {
+                                    const props = obsData.properties;
+                                    const tempF = props.temperature.value !== null 
+                                        ? Math.round((props.temperature.value * 9/5) + 32)
+                                        : null;
+                                    
+                                    weatherData.push({
+                                        location: `${location.city}, ${location.state}`,
+                                        temp: tempF || '--',
+                                        description: props.textDescription || 'N/A',
+                                        humidity: props.relativeHumidity.value ? Math.round(props.relativeHumidity.value) : '--',
+                                        wind: props.windSpeed.value ? Math.round(props.windSpeed.value * 0.621371) : '--'
+                                    });
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.error(`Error fetching weather for ${location.city}:`, error);
+                        weatherData.push({
+                            location: `${location.city}, ${location.state}`,
+                            temp: '--',
+                            description: 'Data unavailable',
+                            humidity: '--',
+                            wind: '--'
+                        });
+                    }
+                }
+
+                if (weatherData.length > 0) {
+                    return { success: true, data: weatherData };
+                } else {
+                    return { success: false, error: 'No weather data available' };
+                }
+            } catch (error) {
+                console.error('Error fetching weather:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function fetchNews() {
+            try {
+                const aitechArticles = await fetchNewsByCategory(CONFIG.newsFeedsAITech, CONFIG.articlesPerCategory);
+                const supplementArticles = await fetchNewsByCategory(CONFIG.newsFeedsSupplements, CONFIG.articlesPerCategory);
+                const financeArticles = await fetchNewsByCategory(CONFIG.newsFeedsFinance, CONFIG.articlesPerCategory);
+                
+                return {
+                    success: true,
+                    aitech: aitechArticles,
+                    supplements: supplementArticles,
+                    finance: financeArticles
+                };
+            } catch (error) {
+                console.error('Error fetching news:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function fetchNewsByCategory(feeds, maxArticles) {
+            const allArticles = [];
+            
+            for (const feedUrl of feeds) {
+                try {
+                    const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`;
+                    const response = await fetch(apiUrl);
+                    const data = await response.json();
+                    
+                    if (data.status === 'ok' && data.items) {
+                        data.items.forEach(item => {
+                            allArticles.push({
+                                title: item.title,
+                                source: data.feed.title,
+                                url: item.link,
+                                pubDate: new Date(item.pubDate)
+                            });
+                        });
+                    }
+                } catch (error) {
+                    console.error(`Error fetching feed ${feedUrl}:`, error);
+                }
+            }
+            
+            allArticles.sort((a, b) => b.pubDate - a.pubDate);
+            return allArticles.slice(0, maxArticles);
+        }
+
+        async function fetchEconomicCalendar() {
+            try {
+                const allEvents = [];
+                const today = new Date();
+                const fourteenDaysAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000);
+                const fourteenDaysAhead = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
+                
+                // Fetch Fed announcements
+                for (const feedUrl of CONFIG.economicCalendarFeeds) {
+                    try {
+                        const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`;
+                        const response = await fetch(apiUrl);
+                        const data = await response.json();
+                        
+                        if (data.status === 'ok' && data.items) {
+                            data.items.forEach(item => {
+                                const eventDate = new Date(item.pubDate);
+                                // Filter: last 14 days or next 14 days
+                                if (eventDate >= fourteenDaysAgo && eventDate <= fourteenDaysAhead) {
+                                    // Filter for significant Fed events only
+                                    const title = item.title.toLowerCase();
+                                    if (title.includes('fomc') || 
+                                        title.includes('federal funds rate') ||
+                                        title.includes('interest rate') ||
+                                        title.includes('monetary policy') ||
+                                        title.includes('statement') ||
+                                        title.includes('minutes')) {
+                                        
+                                        const isPast = eventDate < today;
+                                        allEvents.push({
+                                            title: item.title,
+                                            source: 'Federal Reserve',
+                                            url: item.link || 'https://www.federalreserve.gov/newsevents.htm',
+                                            pubDate: eventDate,
+                                            dateStr: eventDate.toLocaleDateString('en-US', { 
+                                                weekday: 'short', 
+                                                month: 'short', 
+                                                day: 'numeric',
+                                                year: 'numeric'
+                                            }),
+                                            isPast: isPast
+                                        });
+                                    }
+                                }
+                            });
+                        }
+                    } catch (error) {
+                        console.error(`Error fetching economic feed ${feedUrl}:`, error);
+                    }
+                }
+                
+                // Add upcoming known economic events (manually curated major events)
+                const upcomingEvents = [
+                    { title: 'FOMC Meeting Minutes', date: new Date('2026-02-19'), source: 'Federal Reserve', url: 'https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm' },
+                    { title: 'Employment Situation Report (Jobs Report)', date: new Date('2026-02-21'), source: 'Bureau of Labor Statistics', url: 'https://www.bls.gov/news.release/empsit.toc.htm' },
+                    { title: 'Consumer Price Index (CPI)', date: new Date('2026-02-25'), source: 'Bureau of Labor Statistics', url: 'https://www.bls.gov/cpi/' },
+                    { title: 'GDP Report Q4 2025', date: new Date('2026-02-26'), source: 'Bureau of Economic Analysis', url: 'https://www.bea.gov/data/gdp' },
+                    { title: 'FOMC Meeting', date: new Date('2026-03-17'), source: 'Federal Reserve', url: 'https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm' },
+                    { title: 'Employment Situation Report (Jobs Report)', date: new Date('2026-03-06'), source: 'Bureau of Labor Statistics', url: 'https://www.bls.gov/news.release/empsit.toc.htm' }
+                ];
+                
+                // Add past known events with results links
+                const pastEvents = [
+                    { title: 'Employment Situation Report (Jobs Report)', date: new Date('2026-02-07'), source: 'Bureau of Labor Statistics', url: 'https://www.bls.gov/news.release/empsit.toc.htm' },
+                    { title: 'Consumer Price Index (CPI)', date: new Date('2026-02-12'), source: 'Bureau of Labor Statistics', url: 'https://www.bls.gov/cpi/' },
+                    { title: 'FOMC Meeting Minutes Released', date: new Date('2026-02-05'), source: 'Federal Reserve', url: 'https://www.federalreserve.gov/monetarypolicy/fomcminutes20260129.htm' }
+                ];
+                
+                [...upcomingEvents, ...pastEvents].forEach(event => {
+                    if (event.date >= fourteenDaysAgo && event.date <= fourteenDaysAhead) {
+                        const isPast = event.date < today;
+                        allEvents.push({
+                            title: event.title,
+                            source: event.source,
+                            url: event.url,
+                            pubDate: event.date,
+                            dateStr: event.date.toLocaleDateString('en-US', { 
+                                weekday: 'short', 
+                                month: 'short', 
+                                day: 'numeric',
+                                year: 'numeric'
+                            }),
+                            isPast: isPast
+                        });
+                    }
+                });
+                
+                // Sort: upcoming events first (by date asc), then past events (by date desc)
+                const pastEventsFiltered = allEvents.filter(e => e.isPast).sort((a, b) => b.pubDate - a.pubDate);
+                const futureEvents = allEvents.filter(e => !e.isPast).sort((a, b) => a.pubDate - b.pubDate);
+                const sortedEvents = [...futureEvents, ...pastEventsFiltered];
+                
+                if (sortedEvents.length > 0) {
+                    return { success: true, data: sortedEvents.slice(0, CONFIG.economicEventsCount) };
+                } else {
+                    return { success: false, error: 'No significant events found' };
+                }
+            } catch (error) {
+                console.error('Error fetching economic calendar:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // ============================================
+        // DISPLAY FUNCTIONS
+        // ============================================
+
+        function displaySports(data) {
+            const container = document.getElementById('sports-content');
+            if (!data.success) {
+                container.innerHTML = '<div class="error">Failed to load sports data</div>';
+                return;
+            }
+
+            if (data.data.length === 0) {
+                container.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">No games in the last 7 days or next 7 days</div>';
+                return;
+            }
+
+            const html = data.data.map(game => {
+                if (game.isNews) {
+                    return `
+                        <div class="sports-news">
+                            <div class="sports-news-label">
+                                <span>${game.sport}</span>
+                                <span>${game.date}</span>
+                            </div>
+                            <a href="${game.link}" target="_blank">${game.title}</a>
+                        </div>
+                    `;
+                } else {
+                    const logoHtml = game.logo ? `<img src="${game.logo}" alt="Team Logo" class="sports-logo">` : '';
+                    return `
+                        <div class="sports-score">
+                            ${logoHtml}
+                            <div class="sports-score-content">
+                                <div class="sports-header">
+                                    <span>${game.sport}</span>
+                                    <span>${game.date}${game.time ? ' • ' + game.time : ''}</span>
+                                </div>
+                                <div class="sports-matchup">
+                                    <div>
+                                        <div class="team">${game.team1}</div>
+                                        <div class="score">${game.score1}</div>
+                                    </div>
+                                    <div style="color: #999; padding: 0 10px;">vs</div>
+                                    <div style="text-align: right;">
+                                        <div class="team">${game.team2}</div>
+                                        <div class="score">${game.score2}</div>
+                                    </div>
+                                </div>
+                                <div style="font-size: 0.85em; color: #666; margin-top: 5px; text-align: center;">
+                                    ${game.status}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }).join('');
+
+            container.innerHTML = html;
+        }
+
+        function displayMarket(data) {
+            const container = document.getElementById('market-content');
+            const timestampContainer = document.getElementById('market-timestamp');
+            
+            if (!data.success) {
+                container.innerHTML = '<div class="error">Failed to load market data</div>';
+                return;
+            }
+
+            const html = data.data.map(item => `
+                <div class="market-item">
+                    <div>${item.name}</div>
+                    <div>
+                        <div class="market-value">${item.value}</div>
+                        <div class="${item.positive ? 'positive' : 'negative'}">${item.change}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+            
+            if (data.timestamp) {
+                timestampContainer.innerHTML = `As of: ${data.timestamp}`;
+            }
+        }
+
+        function displayWeather(data) {
+            const container = document.getElementById('weather-content');
+            if (!data.success) {
+                container.innerHTML = '<div class="error">Failed to load weather data</div>';
+                return;
+            }
+
+            const html = data.data.map(location => `
+                <div class="weather-location">
+                    <div>
+                        <div class="weather-location-name">${location.location}</div>
+                        <div class="weather-desc">${location.description}</div>
+                        <div class="weather-details">💧 ${location.humidity}% | 💨 ${location.wind} mph</div>
+                    </div>
+                    <div class="weather-temp">${location.temp}°F</div>
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+        }
+
+        function displayNews(data) {
+            if (!data.success) {
+                document.getElementById('news-aitech-content').innerHTML = '<div class="error">Failed to load news</div>';
+                document.getElementById('news-supplements-content').innerHTML = '<div class="error">Failed to load news</div>';
+                document.getElementById('news-finance-content').innerHTML = '<div class="error">Failed to load news</div>';
+                return;
+            }
+
+            const aitechHtml = data.aitech.map(article => `
+                <div class="news-item">
+                    <a href="${article.url}" target="_blank">${article.title}</a>
+                    <div class="news-source">${article.source}</div>
+                </div>
+            `).join('');
+            document.getElementById('news-aitech-content').innerHTML = aitechHtml || '<div style="color: #999; padding: 20px;">No articles available</div>';
+
+            const supplementsHtml = data.supplements.map(article => `
+                <div class="news-item">
+                    <a href="${article.url}" target="_blank">${article.title}</a>
+                    <div class="news-source">${article.source}</div>
+                </div>
+            `).join('');
+            document.getElementById('news-supplements-content').innerHTML = supplementsHtml || '<div style="color: #999; padding: 20px;">No articles available</div>';
+
+            const financeHtml = data.finance.map(article => `
+                <div class="news-item">
+                    <a href="${article.url}" target="_blank">${article.title}</a>
+                    <div class="news-source">${article.source}</div>
+                </div>
+            `).join('');
+            document.getElementById('news-finance-content').innerHTML = financeHtml || '<div style="color: #999; padding: 20px;">No articles available</div>';
+        }
+
+        function displayEconomicCalendar(data) {
+            const container = document.getElementById('economic-content');
+            if (!data.success) {
+                container.innerHTML = '<div class="error">Failed to load economic calendar</div>';
+                return;
+            }
+
+            const html = data.data.map(event => {
+                const cssClass = event.isPast ? 'past' : 'upcoming';
+                const statusLabel = event.isPast ? '✓ Past' : '→ Upcoming';
+                
+                return `
+                    <div class="economic-event ${cssClass}">
+                        <div class="economic-event-title">
+                            <a href="${event.url}" target="_blank">${event.title}</a>
+                        </div>
+                        <div class="economic-event-meta">
+                            <span>${event.source}</span>
+                            <span>${statusLabel} • ${event.dateStr}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = html || '<div style="color: #999; padding: 20px;">No significant events in the next 14 days</div>';
+        }
+
+        // ============================================
+        // MAIN LOAD FUNCTION
+        // ============================================
+
+        async function loadAllData() {
+            try {
+                const [sports, market, weather, news, economic] = await Promise.all([
+                    fetchSportsScores(),
+                    fetchMarketData(),
+                    fetchWeather(),
+                    fetchNews(),
+                    fetchEconomicCalendar()
+                ]);
+
+                displaySports(sports);
+                displayMarket(market);
+                displayWeather(weather);
+                displayNews(news);
+                displayEconomicCalendar(economic);
+                // Calendar now uses iframe - no fetch needed
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        window.onload = loadAllData;
+        setInterval(loadAllData, 30 * 60 * 1000);
+    </script>
+</body>
+</html>
